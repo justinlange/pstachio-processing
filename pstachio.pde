@@ -37,6 +37,8 @@ Timer handDraw;
 
 Rekognition rekog;
 RFace[] faces;
+float sureNum = .7;
+boolean sureBool = false;
 
 void setup() {
   size(1024, 768);
@@ -87,6 +89,9 @@ void tryFaceRec() {
   showMatches = true;
 }
 
+void trainFace() {
+}
+
 void showMatches() {
   for (int i = 0; i < faces.length; i++) {
     // Possible face matches come back in a FloatDict
@@ -97,9 +102,15 @@ void showMatches() {
     for (String key : matches.keys()) {
       float likely = matches.get(key);
       display += key + ": " + likely + "\n";
+      if (likely > sureNum) sureBool = true;
     }
-    // We could also get Age, Gender, Smiling, Glasses, and Eyes Closed data like in the FaceDetect example
-    text(display, 50, 60);
+    if(sureBool){
+        text(display, 50, 60);
+    }else{
+      persistantText = "we don't seem to recognize you! \n  stach to create a new account";
+      text(persistantText, 50, 60);
+    }
+    
   }
 }
 
