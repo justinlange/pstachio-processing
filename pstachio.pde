@@ -7,6 +7,7 @@ import rekognition.faces.*;
 Capture video;
 OpenCV opencv;
 PImage frame1;
+
 int stachCount = 7;
 int currentStach = 0;
 int appFrameCount = 2;
@@ -27,17 +28,23 @@ int vidW = 640;
 int vidH = 480;
 
 String currentUser;
+String typedText = "what is your name?";
+String fileName;
+
 
 
 boolean recImgDebug = false;
 boolean showMatches = false;
+boolean getUserInfo = false;
+
+int userInfoCounter = 0;
 
 Timer splashScreen;
 Timer handDraw;
 
 Rekognition rekog;
 RFace[] faces;
-float sureNum = .7;
+float confidenceThresh = .7;
 boolean sureBool = false;
 
 void setup() {
@@ -77,50 +84,62 @@ void setUpRec() {
   rekog = new Rekognition(this, api_key, api_secret);
   rekog.setNamespace("stachio");
   rekog.setUserID("processing");
+  println("in setUpRec");
 }
 
 void tryFaceRec() {
   println("saving video");
   video.read(); // Read a new video frame
-  String fileName = "data/" + currentUser + ".jpg";
+  fileName = "data/" + currentUser + ".jpg";
   video.save(fileName);
   println("rekognizing face");
   faces = rekog.recognize(fileName);
   showMatches = true;
+  println("in tryFaceRec");
 }
 
-void trainFace() {
-}
 
 void showMatches() {
   for (int i = 0; i < faces.length; i++) {
     // Possible face matches come back in a FloatDict
     // A string (name of face) is paired with a float from 0 to 1 (how likely is it that face)
     FloatDict matches = faces[i].getMatches();
-    saluteUser(matches.maxKey(), matches.maxValue());
-    
-    /*
-    for (String key : matches.keys()) {
-      float likely = matches.get(key);
-      display += key + ": " + likely + "\n";
-      if (likely > sureNum) sureBool = true;
-    }
-    */
 
-    if(sureBool){
-    }else{
-      //persistantText = "we don't seem to recognize you! \n  stach to create a new account";
-//      text(persistantText, 50, 60);
+    if (matches.maxValue() > confidenceThresh) {
+      saluteUser(matches.maxKey(), matches.maxValue());
     }
-    
+    else {
+      showMatches = false;
+      getUserInfo = true;
+    }
   }
 }
 
+void getUserInfo() {
+  if (userInfoCounter == 0) text("we don't seem to recognize you! \n  stach to create a new account", 200, 200);
+  else if (userInfoCounter == 1)  text("Enter your name: /n" + typedText, 200, 200);
+  else if (userInfoCounter == 2)  { 
+    text("Is your name " + typedText + "?", 200, 200);
+    if(keyPressed && key != ENTER) userInfoCounter--;
+  }
+  else if (userInfoCounter == 3) {
+    userInfoCounter++;
+    text("Creating account...", 200, 200);
+    trainFace();   
+  }else if(userInfoCounter == 4) {
+    text("account successfully created!", 200, 200);
+  }
+}
+
+void trainFace() {
+    rekog.addFace(fileName, typedText);
+    rekog.train();
+}
+
+//--- MAIN PROGRAM LOGIC ---//
 
 void draw() {
   background(255);
-
-  //if(splashScreen.isTimeUp()) appState = 1;
 
   if (appState == 0) {
     instructionsPage();
@@ -128,10 +147,12 @@ void draw() {
   else if (appState == 1) {
     mainPage();   
     if (showMatches) showMatches();
+    if (getUserInfo) getUserInfo();
   }
   else if (appState == 2) {
   }
 }
+
 
 void captureEvent(Capture c) {
   c.read();
@@ -197,6 +218,9 @@ void mainPage() {
 //--- MOUSE AND KEYBOARD INPUT --//
 
 void keyPressed() {
+  
+ println("userInfoCounter: " + userInfoCounter + "  appState: " + appState);
+  
   switch(key) {
   case 's':  
     currentStach = (currentStach + 1)%stachCount;
@@ -218,5 +242,32 @@ void mouseReleased() {
 }
 
 void mouseMoved() {
+}
+
+void keyReleased() {
+  if (getUserInfo) {
+    if (key != CODED) {
+      switch(key) {
+      case BACKSPACE:
+        typedText = typedText.substring(0, max(0, typedText.length()-1));
+        break;
+      case TAB:
+        typedText += "    ";
+        break;
+      case ENTER:    userInfoCounter++;
+      case RETURN:
+        // comment out the following two lines to disable line-breaks
+        typedText += "\n";
+        break;
+      case ESC:
+      case DELETE:
+        break;
+      default:
+        typedText += key;
+      }
+    }
+    else if (key == ENTER) {
+    }
+  }
 }
 
