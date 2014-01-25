@@ -99,6 +99,8 @@ void showMatches() {
     FloatDict matches = faces[i].getMatches();
     fill(255);
     String display = "";
+    matches.sortValues();
+    println(matches[0]);
     for (String key : matches.keys()) {
       float likely = matches.get(key);
       display += key + ": " + likely + "\n";
