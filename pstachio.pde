@@ -28,7 +28,6 @@ int vidH = 480;
 
 String currentUser;
 
-
 boolean recImgDebug = false;
 boolean showMatches = false;
 
@@ -40,8 +39,20 @@ RFace[] faces;
 float sureNum = .7;
 boolean sureBool = false;
 
+color green = color(22, 89, 20); 
+color red = color(135, 46, 21);
+PFont aller;
+PFont allerbold;
+
+String[] rewardPhrases = {
+    "You get a\n05% off today!", 
+    "You get a\n10% off today!", 
+    "You get a\n20% off today!"
+  };
+
 void setup() {
   size(1024, 768);
+  setupFonts();
 
   currentUser = "unknown-user";
   video = new Capture(this, vidW, vidH);
