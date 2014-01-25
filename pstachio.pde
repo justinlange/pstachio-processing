@@ -97,20 +97,20 @@ void showMatches() {
     // Possible face matches come back in a FloatDict
     // A string (name of face) is paired with a float from 0 to 1 (how likely is it that face)
     FloatDict matches = faces[i].getMatches();
-    fill(255);
-    String display = "";
-    matches.sortValues();
-    println(matches[0]);
+    saluteUser(matches.maxKey(), matches.maxValue());
+    
+    /*
     for (String key : matches.keys()) {
       float likely = matches.get(key);
       display += key + ": " + likely + "\n";
       if (likely > sureNum) sureBool = true;
     }
+    */
+
     if(sureBool){
-        text(display, 50, 60);
     }else{
-      persistantText = "we don't seem to recognize you! \n  stach to create a new account";
-      text(persistantText, 50, 60);
+      //persistantText = "we don't seem to recognize you! \n  stach to create a new account";
+//      text(persistantText, 50, 60);
     }
     
   }
